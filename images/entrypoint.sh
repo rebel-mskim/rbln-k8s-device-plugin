@@ -8,7 +8,7 @@ LOG_LEVEL=10
 RESOURCE_PREFIX=""
 CONFIG_FILE=""
 CLI_PARAMS=""
-USE_CDI=false
+USE_CDI=
 
 usage()
 {
@@ -20,7 +20,7 @@ usage()
     /bin/echo -e "\t--log-level=$LOG_LEVEL"
     /bin/echo -e "\t--resource-prefix=$RESOURCE_PREFIX"
     /bin/echo -e "\t--config-file=$CONFIG_FILE"
-    /bin/echo -e "\t--use-cdi"
+    /bin/echo -e "\t--use-cdi[=true|false]"
 }
 
 while [ "$1" != "" ]; do
@@ -44,7 +44,7 @@ while [ "$1" != "" ]; do
             CONFIG_FILE=$VALUE
             ;;
         --use-cdi)
-            USE_CDI=true
+            USE_CDI="${VALUE:-true}"
             ;;
         *)
             echo "ERROR: unknown parameter \"$PARAM\""
@@ -72,8 +72,8 @@ if [ "$CONFIG_FILE" != "" ]; then
     CLI_PARAMS="$CLI_PARAMS --config-file $CONFIG_FILE"
 fi
 
-if [ "$USE_CDI" = true ]; then
-    CLI_PARAMS="$CLI_PARAMS --use-cdi"
+if [ -n "$USE_CDI" ]; then
+    CLI_PARAMS="$CLI_PARAMS --use-cdi=$USE_CDI"
 fi
 set -f
 # shellcheck disable=SC2086

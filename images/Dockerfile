@@ -1,9 +1,12 @@
-FROM golang:1.22-alpine as builder
+FROM golang:1.22-alpine AS builder
+
+ARG http_proxy
+ARG https_proxy
 
 COPY . /usr/src/sriov-network-device-plugin
 
-ENV HTTP_PROXY $http_proxy
-ENV HTTPS_PROXY $https_proxy
+ENV HTTP_PROXY=$http_proxy
+ENV HTTPS_PROXY=$https_proxy
 RUN apk add --no-cache --virtual build-dependencies build-base
 
 WORKDIR /usr/src/sriov-network-device-plugin
@@ -11,12 +14,15 @@ ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 RUN make clean && \
     make build
 
-FROM golang:1.20-alpine3.16 as ddp-builder
+FROM golang:1.20-alpine3.16 AS ddp-builder
+
+ARG http_proxy
+ARG https_proxy
 
 ADD images/ddptool-1.0.1.12.tar.gz /tmp/ddptool/
 
-ENV HTTP_PROXY $http_proxy
-ENV HTTPS_PROXY $https_proxy
+ENV HTTP_PROXY=$http_proxy
+ENV HTTPS_PROXY=$https_proxy
 RUN apk add --no-cache --virtual build-dependencies build-base linux-headers
 
 WORKDIR /tmp/ddptool
@@ -24,9 +30,12 @@ RUN make
 
 FROM redhat/ubi9-minimal:9.6
 
+ARG http_proxy
+ARG https_proxy
+
 RUN microdnf install -y \
-      pciutils-3.7.0-7.el9 \
-      hwdata-0.348-9.18.el9 \
+      pciutils \
+      hwdata \
   && microdnf clean all
 
 COPY --from=builder     /usr/src/sriov-network-device-plugin/build/sriovdp /usr/bin/
